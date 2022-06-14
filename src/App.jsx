@@ -1,7 +1,13 @@
 import * as React from "react"
 // IMPORT ANY NEEDED COMPONENTS HERE
+import Header from "./components/Header/Header";
+import Instructions from "./components/Instructions/Instructions";
+import Chip from "./components/Chip/Chip";
+import NutritionalLabel from "./components/NutritionalLabel/NutritionalLabel";
 import { createDataSet } from "./data/dataset"
 import "./App.css"
+import { useState } from "react";
+import { nutritionFacts } from "./constants";
 
 // don't move this!
 export const appInfo = {
@@ -21,37 +27,92 @@ export const appInfo = {
 const { data, categories, restaurants } = createDataSet()
 
 export function App() {
+  const [category, setCategory] = React.useState(null);
+  const [restaurant, setRestaurant] = React.useState(null);
+  const [selectedMenuItem, setSelectedMenuItem] = React.useState(null);
+  let instructionStat=null;
+  let currentMenuItems= data.filter((d) => {
+    return d.food_category == category && d.restaurant == restaurant;
+  });
   return (
     <main className="App">
       {/* CATEGORIES COLUMN */}
       <div className="CategoriesColumn col">
         <div className="categories options">
           <h2 className="title">Categories</h2>
-          {/* YOUR CODE HERE */}
+          {categories.map((categories, idx) =>(
+            <Chip
+              key={idx}
+              label={categories}
+              isActive={categories == category ? true : false}
+              onClick={()=> {
+                setCategory(categories);
+                setSelectedMenuItem(null);
+              }}
+            />
+          ))}
         </div>
       </div>
 
       {/* MAIN COLUMN */}
       <div className="container">
-        {/* HEADER GOES HERE */}
+        <Header 
+        title={appInfo.title}
+        tagline={appInfo.tagline}
+        description={appInfo.description}
+        />
+        
 
         {/* RESTAURANTS ROW */}
         <div className="RestaurantsRow">
           <h2 className="title">Restaurants</h2>
-          <div className="restaurants options">{/* YOUR CODE HERE */}</div>
+          <div className="restaurants options">
+            {restaurants.map((restaurants, idx) =>(
+              <Chip
+              key={idx}
+              label={restaurants}
+              isActive={restaurants == restaurant ? true : false}
+              onClick={()=> {
+                setRestaurant(restaurants);
+                setSelectedMenuItem(null);
+              }}
+            />
+            ))}
+          </div>
         </div>
-
-        {/* INSTRUCTIONS GO HERE */}
+        
+        {(
+          (!category && !restaurant && !selectedMenuItem && <Instructions instructions={appInfo.instructions.start}/>)
+          ||
+          (category && !restaurant && !selectedMenuItem && <Instructions instructions={appInfo.instructions.onlyCategory}/>)
+          ||
+          (!category && restaurant && !selectedMenuItem && <Instructions instructions={appInfo.instructions.onlyRestaurant}/>)
+          ||
+          (category && restaurant && !selectedMenuItem && <Instructions instructions={appInfo.instructions.noSelectedItem}/>)
+          ||
+          (category && restaurant && selectedMenuItem && <Instructions instructions={appInfo.instructions.allSelected}/>)
+          )}
 
         {/* MENU DISPLAY */}
         <div className="MenuDisplay display">
           <div className="MenuItemButtons menu-items">
             <h2 className="title">Menu Items</h2>
-            {/* YOUR CODE HERE */}
+            {currentMenuItems.map((currentMenuItems, idx) =>(
+            <Chip
+              key={idx}
+              label={currentMenuItems.item_name}
+              isActive={currentMenuItems == selectedMenuItem ? true : false}
+              onClick={()=> {
+                setSelectedMenuItem(currentMenuItems);
+              }}
+            />
+            ))}
           </div>
 
           {/* NUTRITION FACTS */}
-          <div className="NutritionFacts nutrition-facts">{/* YOUR CODE HERE */}</div>
+          <div className="NutritionFacts nutrition-facts">
+            {selectedMenuItem ? <NutritionalLabel item={selectedMenuItem}/>:null}
+          </div>
         </div>
 
         <div className="data-sources">
